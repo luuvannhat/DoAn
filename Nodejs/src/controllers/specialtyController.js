@@ -1,3 +1,4 @@
+import res from 'express/lib/response';
 import specialtyService from '../services/specialtyService';
 let createSpecialty = async (req, res) => {
     try {
@@ -24,6 +25,12 @@ let getAllSpecialty = async (req, res) => {
     }
 }
 
+let handleEditSpecialty = async (req, res) => {
+    let data = req.body;
+    let message = await specialtyService.updateSpecialtyData(data);
+    return res.status(200).json(message);
+}
+
 let handleDeleteSpecialty = async (req, res) => {
     if (!req.body.id) {
         return res.status(200).json({
@@ -35,8 +42,22 @@ let handleDeleteSpecialty = async (req, res) => {
     return res.status(200).json(message);
 }
 
+let getDetailSpecialtyById = async (req, res) => {
+    try {
+        let infor = await specialtyService.getDetailSpecialtyById(req.query.id, req.query.location);
+        return res.status(200).json(infor);
+    } catch (e) {
+        console.log(e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from the server'
+        })
+    }
+}
 module.exports = {
     createSpecialty: createSpecialty,
     getAllSpecialty: getAllSpecialty,
-    handleDeleteSpecialty: handleDeleteSpecialty
+    handleDeleteSpecialty: handleDeleteSpecialty,
+    getDetailSpecialtyById: getDetailSpecialtyById,
+    handleEditSpecialty: handleEditSpecialty
 }
