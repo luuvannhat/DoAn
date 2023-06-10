@@ -22,50 +22,133 @@ let postBookAppointment = (data) => {
                     errMessage: 'Missing parameter'
                 })
             } else {
+                let databookcheck = await db.Booking.findOne({
+                    where: {
+                        statusId: 'S2',
+                        doctorId: data.doctorId,
+                        date: data.date,
+                        timeType: data.timeType,
 
-                let token = uuidv4();
-
-                await emailService.sendSimpleEmail({
-                    reciversEmail: data.email,
-                    patientName: data.fullName,
-                    time: data.timeString,
-                    doctorName: data.doctorName,
-                    language: data.language,
-                    redirectLink: buildUrlEmail(data.doctorId, token)
-
-                });
-
-                //upsert patient
-                let user = await db.User.findOrCreate({
-                    where: { email: data.email },
-                    defaults: {
-                        email: data.email,
-                        roleId: 'R3',
-                        gender: data.selectedGender,
-                        address: data.address,
-                        firstName: data.fullName,
                     }
-                });
-
-                //create a booking record
-                if (user && user[0]) {
-                    await db.Booking.findOrCreate({
-                        where: { patientId: user[0].id },
-                        defaults: {
-                            statusId: 'S1',
-                            doctorId: data.doctorId,
-                            patientId: user[0].id,
-                            date: data.date,
-                            timeType: data.timeType,
-                            token: token
-                        }
+                })
+                if (databookcheck) {
+                    resolve({
+                        errCode: 1,
+                        errMessage: 'Ca này bác sĩ đã có lịch khám'
                     })
-                }
+                } else {
+                    let token = uuidv4();
 
-                resolve({
-                    errCode: 0,
-                    errMessage: 'Save infor patient succeed!'
-                });
+                    await emailService.sendSimpleEmail({
+                        reciversEmail: data.email,
+                        patientName: data.fullName,
+                        time: data.timeString,
+                        doctorName: data.doctorName,
+                        language: data.language,
+                        redirectLink: buildUrlEmail(data.doctorId, token)
+
+                    });
+
+                    //upsert patient
+
+                    // let user = await db.User.findOrCreate({
+                    //     where: { email: data.email },
+                    //     defaults: {
+                    //         email: data.email,
+                    //         roleId: 'R3',
+                    //         gender: data.selectedGender,
+                    //         address: data.address,
+                    //         firstName: data.fullName,
+                    //         phonenumber: data.phoneNumber
+                    //     }
+                    // });
+
+                    let user = await db.User.findOne({
+                        where: { email: data.email },
+                        raw: false
+                    })
+
+                    if (user) {
+                        user.gender = data.selectedGender;
+                        user.address = data.address;
+                        user.firstName = data.fullName;
+                        user.phonenumber = data.phoneNumber;
+                        await user.save();
+                    } else {
+                        await db.User.create({
+                            email: data.email,
+                            roleId: 'R3',
+                            gender: data.selectedGender,
+                            address: data.address,
+                            firstName: data.fullName,
+                            phonenumber: data.phoneNumber
+                        })
+                    }
+
+                    //create a booking record
+                    if (user && user[0]) {
+                        await db.Booking.findOrCreate({
+                            where: { patientId: user[0].id },
+                            defaults: {
+                                statusId: 'S1',
+                                doctorId: data.doctorId,
+                                patientId: user[0].id,
+                                date: data.date,
+                                timeType: data.timeType,
+                                token: token
+                            }
+                        })
+                    }
+
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'Save infor patient succeed!'
+                    });
+
+                }
+                // let token = uuidv4();
+
+                // await emailService.sendSimpleEmail({
+                //     reciversEmail: data.email,
+                //     patientName: data.fullName,
+                //     time: data.timeString,
+                //     doctorName: data.doctorName,
+                //     language: data.language,
+                //     redirectLink: buildUrlEmail(data.doctorId, token)
+
+                // });
+
+                // //upsert patient
+                // let user = await db.User.findOrCreate({
+                //     where: { email: data.email },
+                //     defaults: {
+                //         email: data.email,
+                //         roleId: 'R3',
+                //         gender: data.selectedGender,
+                //         address: data.address,
+                //         firstName: data.fullName,
+                //     }
+                // });
+
+                // //create a booking record
+                // if (user && user[0]) {
+                //     await db.Booking.findOrCreate({
+                //         where: { patientId: user[0].id },
+                //         defaults: {
+                //             statusId: 'S1',
+                //             doctorId: data.doctorId,
+                //             patientId: user[0].id,
+                //             date: data.date,
+                //             timeType: data.timeType,
+                //             token: token
+                //         }
+                //     })
+                // }
+
+                // resolve({
+                //     errCode: 0,
+                //     errMessage: 'Save infor patient succeed!'
+                // });
             }
 
         } catch (e) {

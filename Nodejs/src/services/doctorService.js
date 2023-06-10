@@ -32,6 +32,35 @@ let getTopDoctorHome = (limitInput) => {
         }
     })
 }
+let searchDoctorSpecialty = (doctorId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let doctorInfor = await db.Doctor_Infor.findOne({
+                where: {
+                    doctorId: doctorId
+
+                },
+                raw: false
+            })
+
+            let doctorSpecialty = await db.Specialty.findOne({
+                where: {
+                    id: doctorInfor.specialtyId
+                }
+            })
+
+            let doctorSpecialtyName = doctorSpecialty.name;
+
+            resolve({
+                errCode: 0,
+                data: doctorSpecialtyName
+            })
+
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 
 let getAllDoctors = () => {
     return new Promise(async (resolve, reject) => {
@@ -476,6 +505,7 @@ module.exports = {
     getExtraInforDoctorById: getExtraInforDoctorById,
     getProfileDoctorById: getProfileDoctorById,
     getListPatientForDoctor: getListPatientForDoctor,
-    sendRemedy: sendRemedy
+    sendRemedy: sendRemedy,
+    searchDoctorSpecialty: searchDoctorSpecialty,
 
 }
