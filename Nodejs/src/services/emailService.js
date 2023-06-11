@@ -45,6 +45,11 @@ let getBodyHTMLEmail = (dataSend) => {
             <a href=${dataSend.redirectLink} target="_blank">Click here</a>
         </div>
 
+        <p>Nếu bạn muốn hủy lịch khám, vui lòng click vào đường link bên dưới để xác nhận và hoàn tất hủy lịch khám bệnh</p>
+        <div>
+            <a href=${dataSend.cancelLink} target="_blank">Click here</a>
+        </div>
+
         <div>Xin chân thành cảm ơn!</div>
 
         `
